@@ -35,18 +35,18 @@ export default class AnswerController extends Controller {
     return userController.update(userToUpdate.id, userToUpdate.toFirestore())
   }
 
-  async removeUserAnswer(payload) {
-    const userToUpdate = await userController.getById(payload.cooperatorId)
+async removeUserAnswer(payload) {
+  const userToUpdate = await userController.getById(payload.cooperatorId)
 
-    // Delete answers document
-    const answerDocumentId =
-      userToUpdate.myAnswers[`${payload.testDocId}`].answersDocId
-    await super.delete(COLLECTION, answerDocumentId)
+  const userAnswer = userToUpdate.myAnswers?.[payload.testDocId]
+  if (!userAnswer?.answersDocId) return
+  // Delete answers document
+  await super.delete(COLLECTION, userAnswer.answersDocId)
 
-    // Remove it from user
-    delete userToUpdate.myAnswers[`${payload.testDocId}`]
-    return userController.update(userToUpdate.id, userToUpdate.toFirestore())
-  }
+  // Remove it from user
+  delete userToUpdate.myAnswers[payload.testDocId]
+  return userController.update(userToUpdate.id, userToUpdate.toFirestore())
+}
 
   async saveTestAnswer(payload, answersDocId, testType) {
     payload.lastUpdate = Date.now()
